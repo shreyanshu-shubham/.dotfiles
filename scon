@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    box_name=$(grep "Host " ~/.ssh/config | awk '{print $2}' | fzf --reverse --height 10)
+else
+    box_name="${1}"
+fi
+
+if [ -z "${box_name}" ]; then
+    echo "No box_name"
+    exit
+fi
+
+if [ -f ~/.ssh/ps/${box_name} ]; then
+    sshpass -f ~/.ssh/ps/${box_name} ssh ${box_name}
+else
+    echo "No default configured, running direct"
+    ssh ${box_name}
+fi
