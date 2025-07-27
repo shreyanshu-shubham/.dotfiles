@@ -17,6 +17,20 @@ function install_neovim() {
     tar xzvf "${CUSTOM_CONFIG_ROOT}/nvim-linux64.tar.gz"
 }
 
+function install_custom_postgres_version(){
+    # Import the repository signing key:
+    sudo apt install curl ca-certificates
+    sudo install -d /usr/share/postgresql-common/pgdg
+    sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+    # Create the repository configuration file:
+    . /etc/os-release
+    sudo sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+
+    # Update the package lists:
+    sudo apt update
+}
+
 mkdir -p "$CUSTOM_CONFIG_ROOT"
 cd "$CUSTOM_CONFIG_ROOT"
 
@@ -29,3 +43,16 @@ install_neovim
 # ln nvim-config/init.lua ~/.config/nvim/init.lua
 
 # echo "$BASHRC_APPEND" >> ~/.bashrc_test
+
+# install from apt
+packages_to_install=("tldr" "wget" "git" "curl" "gcc" "g++" "make" "cmake")
+
+sudo apt -qq update
+for itm in "${packages_to_install[@]}"; do
+	echo "Installing ${itm}"
+	sudo apt install -qq -y ${itm}
+done
+
+tldr -u
+
+# TODO git config 
