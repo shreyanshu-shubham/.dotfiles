@@ -66,11 +66,12 @@ function install_node() {
     # installs nvm (Node Version Manager)
     curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${latest_tag}/install.sh" | bash
     # download and install Node.js (you may need to restart the terminal)
+    source ~/.bashrc
     nvm install 20
     # verifies the right Node.js version is in the environment
-    node -v # should print `v20.18.0`
+    node -v
     # verifies the right npm version is in the environment
-    npm -v # should print `10.8.2`
+    npm -v
 }
 
 function install_neovim() {
@@ -79,57 +80,75 @@ function install_neovim() {
     cd neovim
     make CMAKE_BUILD_TYPE=RelWithDebInfo
     sudo make install
+    cd "${CUSTOM_CONFIG_SOURCE_ROOT}"
 }
 
-function install_custom_postgres_version(){
-    # Import the repository signing key:
-    sudo apt install curl ca-certificates
-    sudo install -d /usr/share/postgresql-common/pgdg
-    sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+# function install_custom_postgres_version(){
+#     # Import the repository signing key:
+#     sudo apt install curl ca-certificates
+#     sudo install -d /usr/share/postgresql-common/pgdg
+#     sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
 
-    # Create the repository configuration file:
-    . /etc/os-release
-    sudo sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
+#     # Create the repository configuration file:
+#     . /etc/os-release
+#     sudo sh -c "echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $VERSION_CODENAME-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
 
-    # Update the package lists:
-    sudo apt update
-}
+#     # Update the package lists:
+#     sudo apt update
+# }
 
 function install_fzf(){
-    rm -rf ~/.fzf
-    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-    ~/.fzf/install
+    git clone --depth 1 https://github.com/junegunn/fzf.git
+    bash fzf/install
+    cd "${CUSTOM_CONFIG_SOURCE_ROOT}"
 }
 
 function install_fastfetch(){
-    # TODO : implementation pending 
-    :
+    latest_tag=$(get_latest_tag_for_remote https://github.com/fastfetch-cli/fastfetch.git)
+    git clone --branch "${latest_tag}" --single-branch https://github.com/fastfetch-cli/fastfetch.git 
+    cd fastfetch
+    mkdir -p build
+    cd build
+    cmake ..
+    cmake --build . --target fastfetch
+    cd "${CUSTOM_CONFIG_SOURCE_ROOT}"
 }
+
+# TODO : install and setup sudo for arch
+# TODO : install and setup tmux
 
 TERMINAL_COLUMNS=$(tput cols)
 TERMINAL_ROWS=$(tput lines)
-CUSTOM_CONFIG_SOURCE_ROOT=$(dirname "$(realpath "$0")")
+CUSTOM_CONFIG_SOURCE_ROOT="$(dirname "$(realpath "$0")")/source"
+CUSTOM_CONFIG_STASH_ROOT="$(dirname "$(realpath "$0")")/stashed_files_$(date +%s)"
 
-# mkdir -p "$CUSTOM_CONFIG_ROOT"
-# cd "$CUSTOM_CONFIG_ROOT"
+mkdir -p "${CUSTOM_CONFIG_STASH_ROOT}"
+mkdir -p "${CUSTOM_CONFIG_SOURCE_ROOT}"
+cd "${CUSTOM_CONFIG_SOURCE_ROOT}"
 
-# install_neovim
+# install from apt
+packages_to_install=("tldr" "wget" "git" "curl" "gcc" "g++" "make" "cmake" "curl" "unzip" "net-tools" "sudo" "pkgconfig")
+
+# sudo apt -qq update
+pacman -Syu --noconfirm # TODO make noconfirm a script flag
+for itm in "${packages_to_install[@]}"; do
+	echo "Installing ${itm}"
+	# sudo apt install -qq -y "${itm}"
+    pacman -S "${itm}"
+done
+
+install_node
+install_neovim
+install_fastfetch
+install_fzf
 
 # # mkdir -p ~/.config/nvim
-# # ln nvim-config/init.lua ~/.config/nvim/init.lua
+# # ln -s nvim/init.lua ~/.config/nvim/init.lua
 
 # # echo "$BASHRC_APPEND" >> ~/.bashrc_test
 
-# # install from apt
-# packages_to_install=("tldr" "wget" "git" "curl" "gcc" "g++" "make" "cmake" "fzf" "curl" "unzip" "net-tools")
-
-# sudo apt -qq update
-# for itm in "${packages_to_install[@]}"; do
-# 	echo "Installing ${itm}"
-# 	sudo apt install -qq -y ${itm}
-# done
 
 # tldr -u
 
 
-print_separator_with_string "2" '0' "hello"
+# print_separator_with_string "2" '0' "hello"
