@@ -14,6 +14,8 @@ alias free='free -m'           # show sizes in MB
 alias grep='grep --color=auto' # colorize output (good for log files)
 alias mv='mv -i'               # interactive don't override
 alias cp='cp -L'
+alias mkdir='mkdir -pv'
+alias ls='ls -h --color=auto --group-directories-first'
 
 # package manager
 os_name=$(cat /etc/os-release | grep -E "^ID=" | cut -d"=" -f2)
