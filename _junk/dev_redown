@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+#figlet "E"
+#tree "/mnt/e/#redownload" | grep $1
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+for x in {d..z}
+do
+if [ -d /mnt/${x}/#redownload ]; then
+echo -e "${GREEN}${x} exists${NC}"
+#figlet $x
+tree /mnt/${x}/#redownload | grep -i $1 || echo No match
+else
+echo -e "${RED}$x doesnt exist${NC}"
+fi
+done
